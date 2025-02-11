@@ -92,13 +92,13 @@ class FaissConan(ConanFile):
         # https://discourse.cmake.org/t/how-to-find-openmp-with-clang-on-macos/8860/12
         # https://gitlab.kitware.com/cmake/cmake/-/issues/24097
         if os_info.is_macos:
-            proc = subprocess.run("cmake --version", shell=True, capture_output=True)       
+            proc = subprocess.run("cmake --version | grep -oP '\d+\.\d+\.\d+'", shell=True, capture_output=True)       
             cmake_version = f"{proc.stdout.decode('UTF-8').strip()}"
         #     cmake_version = cmake_version.split()[-1]  # Get e.g. "3.31.5"
-        #     version_tuple = tuple(map(int, cmake_version.split('.')))  # (3, 31, 5)
+            version_tuple = tuple(map(int, cmake_version.split('.')))  # (3, 31, 5)
 
             print(f"cmake version: {cmake_version}")
-        #     print(f"version_tuple: {version_tuple}")
+            print(f"version_tuple: {version_tuple}")
 
         #     proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
         #     omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
@@ -147,9 +147,15 @@ class FaissConan(ConanFile):
 
         print(f"OpenMP_ROOT {omp_prefix_path}")
 
+        value = os.getenv("LDFLAGS")
+        print(value if value is not None else "LDFLAGS variable not set")
+
+        value = os.getenv("CPPFLAGS")
+        print(value if value is not None else "CPPFLAGS variable not set")
+
         os.environ["OpenMP_ROOT"] = omp_prefix_path
-        os.environ["LDFLAGS"] = f"{omp_prefix_path}/lib"
-        os.environ["CPPFLAGS"] = f"{omp_prefix_path}/include"
+        #os.environ["LDFLAGS"] = f"{omp_prefix_path}/lib"
+        #os.environ["CPPFLAGS"] = f"{omp_prefix_path}/include"
 
         cmake_debug = self._configure_cmake()
         cmake_debug.build(build_type="Debug")
