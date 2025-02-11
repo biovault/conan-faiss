@@ -99,7 +99,7 @@ class FaissConan(ConanFile):
             proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)
             omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
 
-            if self.settings.arch.startswith("arm"):
+            if self.settings.compiler.version > 14:
                 print("ARM")
                 tc.variables["OpenMP_CXX_FLAGS"] = "-Xclang -fopenmp"
                 tc.variables["OpenMP_C_FLAG"] = "-Xclang -fopenmp"
