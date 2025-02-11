@@ -97,26 +97,27 @@ class FaissConan(ConanFile):
             print(f"cmake version: {cmake_version}")
 
             #cmake_version = cmake_version.split()[-1]  # Get e.g. "3.31.5"
-            cmake_version_major = int(cmake_version.split('.')[0])
-            cmake_version_minor = int(cmake_version.split('.')[1])
+            # cmake_version_major = int(cmake_version.split('.')[0])
+            # cmake_version_minor = int(cmake_version.split('.')[1])
 
-            print(f"cmake_version_major: {cmake_version_major}")
-            print(f"cmake_version_minor: {cmake_version_minor}")
+            # print(f"cmake_version_major: {cmake_version_major}")
+            # print(f"cmake_version_minor: {cmake_version_minor}")
 
             proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
             omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
+            os.environ["OpenMP_ROOT"] = omp_prefix_path
 
-            if cmake_version_major == 3 and cmake_version_minor > 26:
-                print("Workaround...")
-                tc.variables["OpenMP_CXX_FLAG"] = "-Xclang -fopenmp" 
-                tc.variables["OpenMP_CXX_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
-                tc.variables["OpenMP_CXX_LIB_NAMES"] = "-libomp" 
-                tc.variables["OpenMP_C_FLAG"] = "-Xclang -fopenmp" 
-                tc.variables["OpenMP_C_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
-                tc.variables["OpenMP_C_LIB_NAMES"] = "libomp" 
-                tc.variables["OpenMP_libomp_LIBRARY"] = f"{omp_prefix_path}/lib/libomp.dylib" 
-            else:
-                tc.variables["OpenMP_ROOT"] = omp_prefix_path
+            # if cmake_version_major == 3 and cmake_version_minor > 26:
+            #     print("Workaround...")
+            #     tc.variables["OpenMP_CXX_FLAG"] = "-Xclang -fopenmp" 
+            #     tc.variables["OpenMP_CXX_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
+            #     tc.variables["OpenMP_CXX_LIB_NAMES"] = "-libomp" 
+            #     tc.variables["OpenMP_C_FLAG"] = "-Xclang -fopenmp" 
+            #     tc.variables["OpenMP_C_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
+            #     tc.variables["OpenMP_C_LIB_NAMES"] = "libomp" 
+            #     tc.variables["OpenMP_libomp_LIBRARY"] = f"{omp_prefix_path}/lib/libomp.dylib" 
+            # else:
+            #     tc.variables["OpenMP_ROOT"] = omp_prefix_path
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
@@ -150,8 +151,8 @@ class FaissConan(ConanFile):
 
         # print(f"OpenMP_ROOT {omp_prefix_path}")
 
-        # value = os.getenv("LDFLAGS")
-        # print(value if value is not None else "LDFLAGS variable not set")
+        value = os.getenv("OpenMP_ROOT")
+        print(value if value is not None else "OpenMP_ROOT variable not set")
 
         # value = os.getenv("CPPFLAGS")
         # print(value if value is not None else "CPPFLAGS variable not set")
