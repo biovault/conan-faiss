@@ -1,4 +1,4 @@
-from conans import ConanFile, tools
+from conans import ConanFile
 from conan.tools.cmake import CMakeDeps, CMake, CMakeToolchain
 from conans.tools import os_info, SystemPackageTool, get_env
 import os
@@ -20,6 +20,8 @@ class FaissConan(ConanFile):
     topics = ("clustering", "similarity")
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "testing": [True, False]}
+
+    short_paths = True
     default_options = {"shared": True, "testing": False}
     generators = "CMakeDeps"
     exports = "cmake/*"
@@ -42,13 +44,14 @@ class FaissConan(ConanFile):
         self.cpp.package.bindirs = ["bin/$<CONFIG>"]
 
     def system_requirements(self):
-        if os_info.is_macos:
-            installer = SystemPackageTool()
-            installer.install("libomp")
-            # Make the brew OpenMP findable with a symlink
-            proc = subprocess.run("brew --prefix libomp",  shell=True, capture_output=True)
-            subprocess.run(f"ln {proc.stdout.decode('UTF-8').strip()}/lib/libomp.dylib /usr/local/lib/libomp.dylib", shell=True)
-            
+        pass
+        # if os_info.is_macos:
+        #     installer = SystemPackageTool()
+        #     installer.install("libomp")
+        #     # Make the brew OpenMP findable with a symlink
+        #     proc = subprocess.run("brew --prefix libomp",  shell=True, capture_output=True)
+        #     subprocess.run(f"ln {proc.stdout.decode('UTF-8').strip()}/lib/libomp.dylib /usr/local/lib/libomp.dylib", shell=True)
+
     def generate(self):
         print("In generate")
         """Generate the CMake configuration using
@@ -71,6 +74,7 @@ class FaissConan(ConanFile):
             generator = "Ninja Multi-Config"
 
         tc = CMakeToolchain(self, generator=generator)
+
         tc.variables["FAISS_ENABLE_PYTHON "] = "OFF"
         tc.variables["FAISS_ENABLE_GPU "] = "OFF"
         tc.variables["BUILD_TESTING"] = "ON" if self.options.testing else "OFF"
@@ -94,10 +98,10 @@ class FaissConan(ConanFile):
         # cmake might have issues with finding openmp
         # https://discourse.cmake.org/t/how-to-find-openmp-with-clang-on-macos/8860/12
         # https://gitlab.kitware.com/cmake/cmake/-/issues/24097
-        if os_info.is_macos:
-            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)      
-            omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-            tc.variables["OpenMP_ROOT"] = omp_prefix_path
+        # if os_info.is_macos:
+        #     proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)      
+        #     omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
+        #     tc.variables["OpenMP_ROOT"] = omp_prefix_path
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 

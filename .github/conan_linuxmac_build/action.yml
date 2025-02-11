@@ -39,7 +39,6 @@ runs:
         pip install conan~=1.66.0
         pip install "markupsafe<2.1"
         pip install -Iv cmake>=3.17
-        pip install h5py
         if [[ ${{ inputs.conan-build-os }} == "Linux" ]]; then sudo apt-get install -y ninja-build; fi
 
         export CONAN_CMAKE_PROGRAM=`which cmake`
@@ -63,6 +62,8 @@ runs:
 
     - name: Build with conan
       run: |
+
+        echo $OPENMP_ROOT
         export CONAN_USER_HOME=`pwd`/_conan
         echo Add LKEB artifactory as remote
         conan remote add $CONAN_LKEB_ARTIFACTORY $CONAN_UPLOAD
