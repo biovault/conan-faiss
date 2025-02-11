@@ -46,10 +46,6 @@ runs:
           sudo apt-get install -y ninja-build
         fi
 
-        if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then 
-          brew install libomp
-        fi
-
         export CONAN_CMAKE_PROGRAM=`which cmake`
         echo CMake version:
         cmake --version
@@ -66,19 +62,6 @@ runs:
     - name: Build with conan
       run: |
       
-        echo Test START
-        echo "$(brew --prefix)/opt/libomp"
-        export OpenMP_ROOT=$(brew --prefix)/opt/libomp
-        echo $OpenMP_ROOT
-        echo Test END
-
-        if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then 
-          if [[ ${{ inputs.conan-compiler-version }} > 14 ]]; then
-            export LDFLAGS="-L$OpenMP_ROOT/lib"
-            export CPPFLAGS="-I$OpenMP_ROOT/include"
-         fi
-        fi
-
         export CONAN_USER_HOME=`pwd`/_conan
         echo Add LKEB artifactory as remote
         conan remote add $CONAN_LKEB_ARTIFACTORY $CONAN_UPLOAD
