@@ -98,7 +98,7 @@ class FaissConan(ConanFile):
         if os_info.is_macos:
             proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)      
             tc.variables["OpenMP_CXX_FLAGS"] = "-Xclang -fopenmp"
-            tc.variables["OpenMP_CXX_LIB_NAMES"] = "libomp "
+            tc.variables["OpenMP_CXX_LIB_NAMES"] = "libomp"
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
