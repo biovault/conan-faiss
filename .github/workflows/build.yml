@@ -50,6 +50,7 @@ jobs:
             build-config: Release
             build-os: Linux
             build-libcxx: libstdc++11
+            build-arch: x86_64
 
           - name: Linux_gcc13
             os: ubuntu-24.04
@@ -67,6 +68,7 @@ jobs:
             build-os: Macos
             build-xcode-version: 14.3
             build-libcxx: libc++
+            build-arch: x86_64
 
           - name: Macos_xcode15
             os: macos-14
@@ -76,6 +78,7 @@ jobs:
             build-os: Macos
             build-xcode-version: 15.4
             build-libcxx: libc++
+            build-arch: armv8
   
           - name: Macos_xcode16
             os: macos-15
@@ -85,6 +88,7 @@ jobs:
             build-os: Macos
             build-xcode-version: 16.2
             build-libcxx: libc++
+            build-arch: armv8
 
     steps:
       - name: Checkout the source
@@ -130,6 +134,7 @@ jobs:
           conan-libcxx-version: ${{matrix.build-libcxx}}
           conan-build-type: ${{matrix.build-config}}
           conan-build-os: ${{matrix.build-os}}
+          build-arch: ${{matrix.build-arch}}
           conan-user: ${{secrets.LKEB_UPLOAD_USER}}
           conan-password: ${{secrets.LKEB_UPLOAD_USER_PASSWORD}}
           conan-pem: ${{secrets.LKEB_UPLOAD_CERT_CHAIN}}
@@ -145,6 +150,7 @@ jobs:
           conan-libcxx-version: ${{matrix.build-libcxx}}
           conan-build-type: ${{matrix.build-config}}
           conan-build-os: ${{matrix.build-os}}
+          build-arch: ${{matrix.build-arch}}
           conan-user: ${{secrets.LKEB_UPLOAD_USER}}
           conan-password: ${{secrets.LKEB_UPLOAD_USER_PASSWORD}}
           conan-pem: ${{secrets.LKEB_UPLOAD_CERT_CHAIN}}
