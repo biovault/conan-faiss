@@ -94,11 +94,12 @@ class FaissConan(ConanFile):
         if os_info.is_macos:
             proc = subprocess.run("cmake --version | grep -oP '\d+\.\d+\.\d+'", shell=True, capture_output=True)       
             cmake_version = f"{proc.stdout.decode('UTF-8').strip()}"
+            print(f"cmake version: {cmake_version}")
+
             #cmake_version = cmake_version.split()[-1]  # Get e.g. "3.31.5"
             cmake_version_major = int(cmake_version.split('.')[0])
             cmake_version_minor = int(cmake_version.split('.')[1])
 
-            print(f"cmake version: {cmake_version}")
             print(f"cmake_version_major: {cmake_version_major}")
             print(f"cmake_version_minor: {cmake_version_minor}")
 
