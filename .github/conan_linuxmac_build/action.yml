@@ -41,7 +41,6 @@ runs:
         pip install wheel
         pip install conan~=1.66.0
         pip install "markupsafe<2.1"
-        pip install -Iv cmake>=3.17
 
         if [[ ${{ inputs.conan-build-os }} == "Linux" ]]; then 
           sudo apt-get update
@@ -49,9 +48,12 @@ runs:
           sudo apt-get install -y ninja-build
         fi
 
-        export CONAN_CMAKE_PROGRAM=`which cmake`
-        echo CMake version:
+        if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then 
+          export HOMEBREW_NO_AUTO_UPDATE=1
+        fi
+
         cmake --version
+        export CONAN_CMAKE_PROGRAM=`which cmake`
         mkdir `pwd`/_conan
         export CONAN_USER_HOME=`pwd`/_conan
         conan user

@@ -59,6 +59,7 @@ jobs:
             build-config: Release
             build-os: Linux
             build-libcxx: libstdc++11
+            build-arch: x86_64
 
           - name: Macos_xcode14.3
             os: macos-13
