@@ -95,13 +95,10 @@ class FaissConan(ConanFile):
         if os_info.is_linux:
             tc.variables["CMAKE_CONFIGURATION_TYPES"] = "Debug;Release;RelWithDebInfo"
 
-        # cmake might have issues with finding openmp
-        # https://discourse.cmake.org/t/how-to-find-openmp-with-clang-on-macos/8860/12
-        # https://gitlab.kitware.com/cmake/cmake/-/issues/24097
-        # if os_info.is_macos:
-        #     proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)      
-        #     omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-        #     tc.variables["OpenMP_ROOT"] = omp_prefix_path
+        if os_info.is_macos:
+            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)      
+            tc.variables["OpenMP_CXX_FLAGS"] = "-Xclang -fopenmp"
+            tc.variables["OpenMP_CXX_LIB_NAMES"] = "libomp "
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
