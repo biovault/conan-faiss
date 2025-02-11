@@ -45,7 +45,10 @@ class FaissConan(ConanFile):
         if os_info.is_macos:
             installer = SystemPackageTool()
             installer.install("libomp")
-
+            # Make the brew OpenMP findable with a symlink
+            proc = subprocess.run("brew --prefix libomp",  shell=True, capture_output=True)
+            subprocess.run(f"ln {proc.stdout.decode('UTF-8').strip()}/lib/libomp.dylib /usr/local/lib/libomp.dylib", shell=True)
+            
     def generate(self):
         print("In generate")
         """Generate the CMake configuration using
@@ -94,17 +97,7 @@ class FaissConan(ConanFile):
         if os_info.is_macos:
             proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)      
             omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-
-            tc.variables["OpenMP_CXX_FLAG"] = "-Xclang -fopenmp" 
-            tc.variables["OpenMP_CXX_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
-            tc.variables["OpenMP_CXX_LIB_NAMES"] = "-libomp" 
-            tc.variables["OpenMP_C_FLAG"] = "-Xclang -fopenmp" 
-            tc.variables["OpenMP_C_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
-            tc.variables["OpenMP_C_LIB_NAMES"] = "libomp" 
-            tc.variables["OpenMP_libomp_LIBRARY"] = f"{omp_prefix_path}/lib/libomp.dylib" 
-
-            #tc.variables["OpenMP_ROOT"] = omp_prefix_path
-            #os.environ["OpenMP_ROOT"] = omp_prefix_path
+            tc.variables["OpenMP_ROOT"] = omp_prefix_path
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
@@ -133,21 +126,6 @@ class FaissConan(ConanFile):
 # '''.format(line_to_replace))
         
         # Build both release and debug for dual packaging
-        # proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
-        # omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-
-        # print(f"OpenMP_ROOT {omp_prefix_path}")
-
-        # value = os.getenv("OpenMP_ROOT")
-        # print(value if value is not None else "OpenMP_ROOT variable not set")
-
-        # value = os.getenv("CPPFLAGS")
-        # print(value if value is not None else "CPPFLAGS variable not set")
-
-        # os.environ["OpenMP_ROOT"] = omp_prefix_path
-        #os.environ["LDFLAGS"] = f"{omp_prefix_path}/lib"
-        #os.environ["CPPFLAGS"] = f"{omp_prefix_path}/include"
-
         cmake_debug = self._configure_cmake()
         cmake_debug.build(build_type="Debug")
         cmake_debug.install(build_type="Debug")
