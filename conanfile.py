@@ -76,11 +76,6 @@ class FaissConan(ConanFile):
         if os_info.is_linux:
             tc.variables["CMAKE_CONFIGURATION_TYPES"] = "Debug;Release;RelWithDebInfo"
 
-        if os_info.is_macos:
-            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
-            prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-            tc.variables["OpenMP_ROOT"] = prefix_path
-
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
         return tc
@@ -95,9 +90,6 @@ class FaissConan(ConanFile):
         if os_info.is_macos:
             installer = SystemPackageTool()
             installer.install("libomp")
-            # Make the brew OpenMP findable with a symlink
-            proc = subprocess.run("brew --prefix libomp",  shell=True, capture_output=True)
-            subprocess.run(f"ln {proc.stdout.decode('UTF-8').strip()}/lib/libomp.dylib /usr/local/lib/libomp.dylib", shell=True)
 
     def generate(self):
         print("In generate")
