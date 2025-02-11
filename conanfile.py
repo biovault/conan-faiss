@@ -91,29 +91,29 @@ class FaissConan(ConanFile):
         # cmake might have issues with finding openmp
         # https://discourse.cmake.org/t/how-to-find-openmp-with-clang-on-macos/8860/12
         # https://gitlab.kitware.com/cmake/cmake/-/issues/24097
-        if os_info.is_macos:
-            proc = subprocess.run("cmake --version", shell=True, capture_output=True)       
-            cmake_version = f"{proc.stdout.decode('UTF-8').strip()}"
-            cmake_version = cmake_version.split()[-1]  # Get e.g. "3.31.5"
-            version_tuple = tuple(map(int, cmake_version.split('.')))  # (3, 31, 5)
+        # if os_info.is_macos:
+        #     proc = subprocess.run("cmake --version", shell=True, capture_output=True)       
+        #     cmake_version = f"{proc.stdout.decode('UTF-8').strip()}"
+        #     cmake_version = cmake_version.split()[-1]  # Get e.g. "3.31.5"
+        #     version_tuple = tuple(map(int, cmake_version.split('.')))  # (3, 31, 5)
 
-            print(f"cmake version: {cmake_version}")
-            print(f"version_tuple: {version_tuple}")
+        #     print(f"cmake version: {cmake_version}")
+        #     print(f"version_tuple: {version_tuple}")
 
-            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
-            omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
+        #     proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
+        #     omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
 
-            if version_tuple[0] == 3 and version_tuple[1] > 26:
-                print("Workaround...")
-                tc.variables["OpenMP_CXX_FLAG"] = "-Xclang -fopenmp" 
-                tc.variables["OpenMP_CXX_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
-                tc.variables["OpenMP_CXX_LIB_NAMES"] = "-libomp" 
-                tc.variables["OpenMP_C_FLAG"] = "-Xclang -fopenmp" 
-                tc.variables["OpenMP_C_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
-                tc.variables["OpenMP_C_LIB_NAMES"] = "libomp" 
-                tc.variables["OpenMP_libomp_LIBRARY"] = f"{omp_prefix_path}/lib/libomp.dylib" 
-            else:
-                tc.variables["OpenMP_ROOT"] = omp_prefix_path
+        #     if version_tuple[0] == 3 and version_tuple[1] > 26:
+        #         print("Workaround...")
+        #         tc.variables["OpenMP_CXX_FLAG"] = "-Xclang -fopenmp" 
+        #         tc.variables["OpenMP_CXX_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
+        #         tc.variables["OpenMP_CXX_LIB_NAMES"] = "-libomp" 
+        #         tc.variables["OpenMP_C_FLAG"] = "-Xclang -fopenmp" 
+        #         tc.variables["OpenMP_C_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
+        #         tc.variables["OpenMP_C_LIB_NAMES"] = "libomp" 
+        #         tc.variables["OpenMP_libomp_LIBRARY"] = f"{omp_prefix_path}/lib/libomp.dylib" 
+        #     else:
+        #         tc.variables["OpenMP_ROOT"] = omp_prefix_path
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
@@ -142,6 +142,13 @@ class FaissConan(ConanFile):
 # '''.format(line_to_replace))
         
         # Build both release and debug for dual packaging
+        proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
+        omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
+
+        print(f"OpenMP_ROOT {omp_prefix_path}")
+
+        os.environ["OpenMP_ROOT"] = omp_prefix_path
+
         cmake_debug = self._configure_cmake()
         cmake_debug.build(build_type="Debug")
         cmake_debug.install(build_type="Debug")
