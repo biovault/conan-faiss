@@ -88,11 +88,11 @@ class FaissConan(ConanFile):
         if os_info.is_linux:
             tc.variables["CMAKE_CONFIGURATION_TYPES"] = "Debug;Release;RelWithDebInfo"
 
-        #if os_info.is_macos:
-            # proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
-            # prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-            # print(f"prefix_path: {prefix_path}")
-            # tc.variables["CMAKE_PREFIX_PATH"] = prefix_path
+        if os_info.is_macos:
+            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
+            prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
+            print(f"prefix_path: {prefix_path}")
+            tc.variables["CMAKE_PREFIX_PATH"] = prefix_path
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
