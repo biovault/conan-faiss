@@ -48,12 +48,11 @@ runs:
 
         if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then 
           export HOMEBREW_NO_AUTO_UPDATE=1
-
-          if [[ ${{ inputs.conan-compiler-version }} > 14 ]]; then 
-            brew install llvm 
-          fi
-
           brew install libomp 
+          if [[ ${{ inputs.conan-compiler-version }} > 14 ]]; then 
+            brew link --overwrite python@3.11
+            brew link --force libomp
+          fi
         fi
 
         export CONAN_CMAKE_PROGRAM=`which cmake`
