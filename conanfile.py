@@ -90,9 +90,10 @@ class FaissConan(ConanFile):
 
         if os_info.is_macos:
             proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
-            prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-            print(f"prefix_path: {prefix_path}")
-            tc.variables["CMAKE_PREFIX_PATH"] = prefix_path
+            omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
+            print(f"omp_prefix_path: {omp_prefix_path}")
+            tc.variables["CMAKE_CXX_FLAGS"] = f"-I{omp_prefix_path}/include -Xclang -fopenmp"
+            tc.variables["CMAKE_EXE_LINKER_FLAGS"] = f"-L{omp_prefix_path}/lib -lomp"
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
