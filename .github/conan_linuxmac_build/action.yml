@@ -64,6 +64,10 @@ runs:
       run: |
 
         echo $OPENMP_ROOT
+
+        export OpenMP_ROOT=$(brew --prefix)/opt/libomp
+        echo $OPENMP_ROOT
+
         export CONAN_USER_HOME=`pwd`/_conan
         echo Add LKEB artifactory as remote
         conan remote add $CONAN_LKEB_ARTIFACTORY $CONAN_UPLOAD
