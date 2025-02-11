@@ -47,6 +47,12 @@ runs:
         fi
 
         if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then 
+          export HOMEBREW_NO_AUTO_UPDATE=1
+
+          if [[ ${{ inputs.conan-compiler-version }} > 14 ]]; then 
+            brew install llvm 
+          fi
+
           brew install libomp 
         fi
 
@@ -55,7 +61,6 @@ runs:
         cmake --version
         mkdir `pwd`/_conan
         export CONAN_USER_HOME=`pwd`/_conan
-        export HOMEBREW_NO_AUTO_UPDATE=1
         conan user
 
         echo Extend conan cacert.pem
@@ -67,10 +72,11 @@ runs:
     - name: Build with conan
       run: |
       
-        echo Test 
+        echo Test START
         echo "$(brew --prefix)/opt/libomp"
         export OpenMP_ROOT=$(brew --prefix)/opt/libomp
-        echo $OPENMP_ROOT
+        echo $OpenMP_ROOT
+        echo Test END
 
         export CONAN_USER_HOME=`pwd`/_conan
         echo Add LKEB artifactory as remote
