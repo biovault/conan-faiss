@@ -100,7 +100,7 @@ jobs:
       - name: Setup python version
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.11"
 
       - name: Setup gcc for Linux
         if: startsWith(runner.os, 'Linux')

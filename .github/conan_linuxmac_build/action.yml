@@ -47,13 +47,7 @@ runs:
         fi
 
         if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then 
-          if [[ ${{ inputs.conan-compiler-version }} > 14 ]]; then
-            brew update && brew install -f --overwrite python@3.13 && brew install libomp && brew link libomp --force
-            brew link --overwrite python@3.13
-            brew link --force libomp
-        else
-            brew install libomp
-          fi
+          brew install libomp
         fi
 
         export CONAN_CMAKE_PROGRAM=`which cmake`
@@ -77,6 +71,13 @@ runs:
         export OpenMP_ROOT=$(brew --prefix)/opt/libomp
         echo $OpenMP_ROOT
         echo Test END
+
+        if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then 
+          if [[ ${{ inputs.conan-compiler-version }} > 14 ]]; then
+            export LDFLAGS="-L$OpenMP_ROOT/lib"
+            export CPPFLAGS="-I$OpenMP_ROOT/include"
+         fi
+        fi
 
         export CONAN_USER_HOME=`pwd`/_conan
         echo Add LKEB artifactory as remote
