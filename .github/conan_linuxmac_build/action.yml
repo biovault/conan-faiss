@@ -59,10 +59,6 @@ runs:
           sudo apt-get install -y libopenblas-dev
         fi
 
-        if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then
-          brew install libomp 
-        fi
-
       shell: bash
 
     - name: Build with conan
@@ -73,10 +69,6 @@ runs:
         echo Add upload user
         conan user -r $CONAN_LKEB_ARTIFACTORY -p ${{ inputs.conan-password }} ${{ inputs.conan-user }}
         export CONAN_PACKAGE_NAME=`conan inspect --raw name conanfile.py`
-
-        if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then
-          export OpenMP_ROOT=$(brew --prefix)/opt/libomp
-        fi
         
         conan profile new action_build
         conan profile update settings.os=${{ inputs.conan-build-os }} action_build
