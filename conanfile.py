@@ -35,7 +35,19 @@ class FaissConan(ConanFile):
         self.run(f"git checkout tags/v{self.version}")
         os.chdir("..")
 
-    def _get_tc(self):
+    def layout(self):
+        # Cause the libs and bin to be output to separate subdirs
+        # based on build configuration.
+        self.cpp.package.libdirs = ["lib/$<CONFIG>"]
+        self.cpp.package.bindirs = ["bin/$<CONFIG>"]
+
+    def system_requirements(self):
+        if os_info.is_macos:
+            installer = SystemPackageTool()
+            installer.install("libomp")
+
+    def generate(self):
+        print("In generate")
         """Generate the CMake configuration using
         multi-config generators on all platforms, as follows:
 
@@ -76,33 +88,15 @@ class FaissConan(ConanFile):
         if os_info.is_linux:
             tc.variables["CMAKE_CONFIGURATION_TYPES"] = "Debug;Release;RelWithDebInfo"
 
-        if os_info.is_macos:
-            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
-            prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-            print(f"prefix_path: {prefix_path}")
-            tc.variables["CMAKE_PREFIX_PATH"] = prefix_path
+        #if os_info.is_macos:
+            # proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
+            # prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
+            # print(f"prefix_path: {prefix_path}")
+            # tc.variables["CMAKE_PREFIX_PATH"] = prefix_path
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
-        return tc
-
-    def layout(self):
-        # Cause the libs and bin to be output to separate subdirs
-        # based on build configuration.
-        self.cpp.package.libdirs = ["lib/$<CONFIG>"]
-        self.cpp.package.bindirs = ["bin/$<CONFIG>"]
-
-    def system_requirements(self):
-        if os_info.is_macos:
-            installer = SystemPackageTool()
-            installer.install("libomp")
-
-    def generate(self):
-        print("In generate")
-        tc = self._get_tc()
         tc.generate()
-        deps = CMakeDeps(self)
-        deps.generate()
 
     def _configure_cmake(self):
         cmake = CMake(self)
