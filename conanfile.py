@@ -42,9 +42,7 @@ class FaissConan(ConanFile):
         self.cpp.package.bindirs = ["bin/$<CONFIG>"]
 
     def system_requirements(self):
-        if os_info.is_macos:
-            installer = SystemPackageTool()
-            installer.install("libomp")
+        pass
 
     def generate(self):
         print("In generate")
@@ -87,12 +85,6 @@ class FaissConan(ConanFile):
 
         if os_info.is_linux:
             tc.variables["CMAKE_CONFIGURATION_TYPES"] = "Debug;Release;RelWithDebInfo"
-
-        if os_info.is_macos:
-            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
-            omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-            print(f"omp_prefix_path: {omp_prefix_path}")
-            tc.variables["OpenMP_ROOT"] = omp_prefix_path
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
