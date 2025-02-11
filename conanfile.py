@@ -95,16 +95,17 @@ class FaissConan(ConanFile):
             proc = subprocess.run("cmake --version | grep -oP '\d+\.\d+\.\d+'", shell=True, capture_output=True)       
             cmake_version = f"{proc.stdout.decode('UTF-8').strip()}"
             #cmake_version = cmake_version.split()[-1]  # Get e.g. "3.31.5"
-            version_tuple = tuple(map(int, cmake_version.split('.')))  # (3, 31, 5)
+            cmake_version_major = int(cmake_version.split('.')[0])
+            cmake_version_minor = int(cmake_version.split('.')[1])
 
             print(f"cmake version: {cmake_version}")
-            print(f"version_tuple[0]: {version_tuple[0]}")
-            print(f"version_tuple[1]: {version_tuple[1]}")
+            print(f"cmake_version_major: {cmake_version_major}")
+            print(f"cmake_version_minor: {cmake_version_minor}")
 
             proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
             omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
 
-            if version_tuple[0] == 3 and version_tuple[1] > 26:
+            if cmake_version_major == 3 and cmake_version_minor > 26:
                 print("Workaround...")
                 tc.variables["OpenMP_CXX_FLAG"] = "-Xclang -fopenmp" 
                 tc.variables["OpenMP_CXX_INCLUDE_DIR"] = f"{omp_prefix_path}/include" 
