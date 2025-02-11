@@ -53,20 +53,8 @@ class FaissConan(ConanFile):
             subprocess.run(f"ln {proc.stdout.decode('UTF-8').strip()}/lib/libomp.dylib /usr/local/lib/libomp.dylib", shell=True)
 
     def generate(self):
-        print("In generate")
-        """Generate the CMake configuration using
-        multi-config generators on all platforms, as follows:
-
-        Windows - defaults to Visual Studio
-        Macos - XCode
-        Linux - Ninja Multi-Config
-
-        CMake needs to be at least 3.17 for Ninja Multi-Config
-
-        Returns:
-            CMakeToolchain: a configured toolchain object
-        """
         generator = None
+
         if self.settings.os == "Macos":
             generator = "Xcode"
 
@@ -100,20 +88,6 @@ class FaissConan(ConanFile):
             omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
             tc.variables["OpenMP_ROOT"] = omp_prefix_path
 
-            # if self.settings.arch == "armv8":
-            #     print("Apple armv8")
-            #     tc.variables["OpenMP_CXX_FLAGS"] = "-Xclang -fopenmp"
-            #     tc.variables["OpenMP_C_FLAG"] = "-Xclang -fopenmp"
-            #     tc.variables["OpenMP_CXX_LIB_NAMES"] = "libomp"
-            #     tc.variables["OpenMP_C_LIB_NAMES"] = "libomp"
-            #     tc.variables["OpenMP_CXX_INCLUDE_DIR"] = f"{omp_prefix_path}/include"
-            #     tc.variables["OpenMP_C_INCLUDE_DIR"] = f"{omp_prefix_path}/include"
-            #     tc.variables["OpenMP_libomp_LIBRARY"] = f"{omp_prefix_path}/lib/libomp.dylib"
-            # else:
-            #    print("Apple x86_64")
-            #    tc.variables["OpenMP_ROOT"] = omp_prefix_path
-
-
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
         tc.generate()
@@ -124,22 +98,7 @@ class FaissConan(ConanFile):
         cmake.verbose = True
         return cmake
 
-    def build(self):
-        # list(TRANSFORM CMAKE_MODULE_PATH PREPEND ${{CMAKE_CURRENT_SOURCE_DIR}}/../cmake)
-#         if self.settings.os == "Windows":         
-#             line_to_replace = 'set(MKL_LIBRARIES)'
-#             tools.replace_in_file("faiss/cmake/FindMKL.cmake", line_to_replace,
-#                               '''{}
-# set(ENV{{MKLROOT}} "D:/intelmkl/intelmkl.devel.win-x64.2023.2.0.49496" ) 
-# message(STATUS "**************In faiss ${{CMAKE_CURRENT_LIST_FILE}} *************")
-# '''.format(line_to_replace))
-            
-#             line_to_replace = 'if(NOT ${_LIBRARIES})'
-#             tools.replace_in_file("faiss/cmake/FindMKL.cmake", line_to_replace,
-#                               '''message(STATUS "**************MKL In libs search ${{IT}} == ${{BLAS_mkl_MKLROOT}} == ${{BLAS_mkl_LIB_PATH_SUFFIXES}}*************")
-#                               {}
-# '''.format(line_to_replace))
-        
+    def build(self):       
         # Build both release and debug for dual packaging
         cmake_debug = self._configure_cmake()
         cmake_debug.build(build_type="Debug")

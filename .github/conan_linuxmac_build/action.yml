@@ -38,9 +38,7 @@ runs:
   steps:
     - name: Install conan & build configuration
       run: |
-        pip install wheel
         pip install conan~=1.66.0
-        pip install "markupsafe<2.1"
 
         if [[ ${{ inputs.conan-build-os }} == "Linux" ]]; then 
           sudo apt-get update
@@ -66,7 +64,6 @@ runs:
 
     - name: Build with conan
       run: |
-      
         export CONAN_USER_HOME=`pwd`/_conan
         echo Add LKEB artifactory as remote
         conan remote add $CONAN_LKEB_ARTIFACTORY $CONAN_UPLOAD
