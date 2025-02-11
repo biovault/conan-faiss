@@ -145,8 +145,6 @@ jobs:
       - name: Mac build
         if: startsWith(matrix.os, 'macOS')
         uses: ./.github/conan_linuxmac_build
-        env:
-          OpenMP_ROOT: ${{ env.OpenMP_ROOT }}
         with:
           conan-compiler: ${{matrix.build-compiler}}
           conan-compiler-version: ${{matrix.build-cversion}}

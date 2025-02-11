@@ -63,9 +63,15 @@ runs:
     - name: Build with conan
       run: |
 
-        echo $OPENMP_ROOT
+        echo ${{ env.OpenMP_ROOT }}
 
         export OpenMP_ROOT=$(brew --prefix)/opt/libomp
+        echo $OPENMP_ROOT
+
+        export OpenMP_ROOT=Test
+        echo $OPENMP_ROOT
+
+        export OpenMP_ROOT=${{ env.OpenMP_ROOT }}
         echo $OPENMP_ROOT
 
         export CONAN_USER_HOME=`pwd`/_conan
