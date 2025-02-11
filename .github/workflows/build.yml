@@ -92,6 +92,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install system dependencies (MacOS)
+        if: startsWith(runner.os, 'macOS')
+        run: |
+          brew install libomp
+          export OpenMP_ROOT=$(brew --prefix)/opt/libomp
+
       - name: Select Xcode for Mac only
         if: startsWith(runner.os, 'macOS')
         run: |
