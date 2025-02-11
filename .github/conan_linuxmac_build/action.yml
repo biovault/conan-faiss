@@ -50,7 +50,6 @@ runs:
           export HOMEBREW_NO_AUTO_UPDATE=1
           brew install libomp 
           if [[ ${{ inputs.conan-compiler-version }} > 14 ]]; then 
-            brew link --overwrite python@3.11
             brew link --force libomp
           fi
         fi
