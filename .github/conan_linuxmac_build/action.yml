@@ -48,8 +48,8 @@ runs:
 
         if [[ ${{ inputs.conan-build-os }} == "Macos" ]]; then 
           if [[ ${{ inputs.conan-compiler-version }} > 14 ]]; then
-            brew update && brew install -f --overwrite python@3.13 && brew install libomp && brew link libomp --force
-            brew link --overwrite python@3.13
+            brew update && brew install -f --overwrite python@3.11 && brew install libomp && brew link libomp --force
+            brew link --overwrite python@3.11
             brew link --force libomp
         else
             brew install libomp
