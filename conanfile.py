@@ -52,7 +52,7 @@ class FaissConan(ConanFile):
         if self.settings.os == "Macos":
             generator = "Xcode"
 
-        if self.settings.os == "Linux":
+        if os_info.is_linux:
             generator = "Ninja Multi-Config"
 
         tc = CMakeToolchain(self, generator=generator)
@@ -61,7 +61,7 @@ class FaissConan(ConanFile):
         tc.variables["BUILD_TESTING"] = "ON" if self.options.testing else "OFF"
         tc.variables["BUILD_SHARED_LIBS"] = "ON" if self.options.shared else "OFF"
 
-        if self.settings.os == "Windows":
+        if os_info.is_windows:
             # tc.variables["MKL_ROOT_DIR"] = "D:/intelmkl"
             tc.variables["BLA_STATIC"] = "ON"
             tc.variables["BLAS_LIBRARY:FILEPATH"] = PurePosixPath(self.BLAS_ROOT / "lib/x64/libopenblas.dll.a")
@@ -73,13 +73,11 @@ class FaissConan(ConanFile):
             #tc.variables["BLAS_LIBRARY"] = "D:/temp/testopenblasOpenBLAS.0.2.14.1/lib/native/lib/x64/libopenblas.dll.a"
             #tc.variables["LAPACK_LIBRARY"] = "D:/temp/testopenblasOpenBLAS.0.2.14.1/lib/native/lib/x64/libopenblas.dll.a"
 
-        if self.settings.os == "Linux":
+        if os_info.is_linux:
             tc.variables["CMAKE_CONFIGURATION_TYPES"] = "Debug;Release;RelWithDebInfo"
 
-        if self.settings.os == "Macos":
-            proc = subprocess.run(
-                "brew --prefix libomp", shell=True, capture_output=True
-            )
+        if os_info.is_macos:
+            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)       
             prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
             tc.variables["OpenMP_ROOT"] = prefix_path
 
@@ -94,7 +92,7 @@ class FaissConan(ConanFile):
         self.cpp.package.bindirs = ["bin/$<CONFIG>"]
 
     def system_requirements(self):
-        if self.settings.os == "Macos":
+        if os_info.is_macos:
             installer = SystemPackageTool()
             installer.install("libomp")
             # Make the brew OpenMP findable with a symlink
