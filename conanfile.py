@@ -1,4 +1,4 @@
-from conans import ConanFile, tools
+from conans import ConanFile
 from conan.tools.cmake import CMakeDeps, CMake, CMakeToolchain
 from conans.tools import os_info, SystemPackageTool, get_env
 import os
@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path, PurePosixPath
 import subprocess
 
-required_conan_version = ">=1.51.0"
+required_conan_version = ">=1.66.0"
 
 
 class FaissConan(ConanFile):
@@ -20,6 +20,8 @@ class FaissConan(ConanFile):
     topics = ("clustering", "similarity")
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "testing": [True, False]}
+
+    short_paths = True
     default_options = {"shared": True, "testing": False}
     generators = "CMakeDeps"
     exports = "cmake/*"
@@ -35,33 +37,38 @@ class FaissConan(ConanFile):
         self.run(f"git checkout tags/v{self.version}")
         os.chdir("..")
 
-    def _get_tc(self):
-        """Generate the CMake configuration using
-        multi-config generators on all platforms, as follows:
+    def layout(self):
+        # Cause the libs and bin to be output to separate subdirs
+        # based on build configuration.
+        self.cpp.package.libdirs = ["lib/$<CONFIG>"]
+        self.cpp.package.bindirs = ["bin/$<CONFIG>"]
 
-        Windows - defaults to Visual Studio
-        Macos - XCode
-        Linux - Ninja Multi-Config
+    def system_requirements(self):
+        pass
+        if os_info.is_macos:
+            installer = SystemPackageTool()
+            installer.install("libomp")
+            # Make the brew OpenMP findable with a symlink
+            proc = subprocess.run("brew --prefix libomp",  shell=True, capture_output=True)
+            subprocess.run(f"ln {proc.stdout.decode('UTF-8').strip()}/lib/libomp.dylib /usr/local/lib/libomp.dylib", shell=True)
 
-        CMake needs to be at least 3.17 for Ninja Multi-Config
-
-        Returns:
-            CMakeToolchain: a configured toolchain object
-        """
+    def generate(self):
         generator = None
+
         if self.settings.os == "Macos":
             generator = "Xcode"
 
-        if self.settings.os == "Linux":
+        if os_info.is_linux:
             generator = "Ninja Multi-Config"
 
         tc = CMakeToolchain(self, generator=generator)
+
         tc.variables["FAISS_ENABLE_PYTHON "] = "OFF"
         tc.variables["FAISS_ENABLE_GPU "] = "OFF"
         tc.variables["BUILD_TESTING"] = "ON" if self.options.testing else "OFF"
         tc.variables["BUILD_SHARED_LIBS"] = "ON" if self.options.shared else "OFF"
 
-        if self.settings.os == "Windows":
+        if os_info.is_windows:
             # tc.variables["MKL_ROOT_DIR"] = "D:/intelmkl"
             tc.variables["BLA_STATIC"] = "ON"
             tc.variables["BLAS_LIBRARY:FILEPATH"] = PurePosixPath(self.BLAS_ROOT / "lib/x64/libopenblas.dll.a")
@@ -73,40 +80,17 @@ class FaissConan(ConanFile):
             #tc.variables["BLAS_LIBRARY"] = "D:/temp/testopenblasOpenBLAS.0.2.14.1/lib/native/lib/x64/libopenblas.dll.a"
             #tc.variables["LAPACK_LIBRARY"] = "D:/temp/testopenblasOpenBLAS.0.2.14.1/lib/native/lib/x64/libopenblas.dll.a"
 
-        if self.settings.os == "Linux":
+        if os_info.is_linux:
             tc.variables["CMAKE_CONFIGURATION_TYPES"] = "Debug;Release;RelWithDebInfo"
 
-        if self.settings.os == "Macos":
-            proc = subprocess.run(
-                "brew --prefix libomp", shell=True, capture_output=True
-            )
-            prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
-            tc.variables["OpenMP_ROOT"] = prefix_path
+        if os_info.is_macos:
+            proc = subprocess.run("brew --prefix libomp", shell=True, capture_output=True)
+            omp_prefix_path = f"{proc.stdout.decode('UTF-8').strip()}"
+            tc.variables["OpenMP_ROOT"] = omp_prefix_path
 
         tc.variables["CMAKE_CXX_STANDARD"] = "17"
 
-        return tc
-
-    def layout(self):
-        # Cause the libs and bin to be output to separate subdirs
-        # based on build configuration.
-        self.cpp.package.libdirs = ["lib/$<CONFIG>"]
-        self.cpp.package.bindirs = ["bin/$<CONFIG>"]
-
-    def system_requirements(self):
-        if self.settings.os == "Macos":
-            installer = SystemPackageTool()
-            installer.install("libomp")
-            # Make the brew OpenMP findable with a symlink
-            proc = subprocess.run("brew --prefix libomp",  shell=True, capture_output=True)
-            subprocess.run(f"ln {proc.stdout.decode('UTF-8').strip()}/lib/libomp.dylib /usr/local/lib/libomp.dylib", shell=True)
-
-    def generate(self):
-        print("In generate")
-        tc = self._get_tc()
         tc.generate()
-        deps = CMakeDeps(self)
-        deps.generate()
 
     def _configure_cmake(self):
         cmake = CMake(self)
@@ -114,22 +98,7 @@ class FaissConan(ConanFile):
         cmake.verbose = True
         return cmake
 
-    def build(self):
-        # list(TRANSFORM CMAKE_MODULE_PATH PREPEND ${{CMAKE_CURRENT_SOURCE_DIR}}/../cmake)
-#         if self.settings.os == "Windows":         
-#             line_to_replace = 'set(MKL_LIBRARIES)'
-#             tools.replace_in_file("faiss/cmake/FindMKL.cmake", line_to_replace,
-#                               '''{}
-# set(ENV{{MKLROOT}} "D:/intelmkl/intelmkl.devel.win-x64.2023.2.0.49496" ) 
-# message(STATUS "**************In faiss ${{CMAKE_CURRENT_LIST_FILE}} *************")
-# '''.format(line_to_replace))
-            
-#             line_to_replace = 'if(NOT ${_LIBRARIES})'
-#             tools.replace_in_file("faiss/cmake/FindMKL.cmake", line_to_replace,
-#                               '''message(STATUS "**************MKL In libs search ${{IT}} == ${{BLAS_mkl_MKLROOT}} == ${{BLAS_mkl_LIB_PATH_SUFFIXES}}*************")
-#                               {}
-# '''.format(line_to_replace))
-        
+    def build(self):       
         # Build both release and debug for dual packaging
         cmake_debug = self._configure_cmake()
         cmake_debug.build(build_type="Debug")
